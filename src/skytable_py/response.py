@@ -116,12 +116,12 @@ class Value:
 
     def string(self) -> Union[None, str]:
         if isinstance(self.repr, str):
-            return self.repr.inner
+            return self.repr
         return None
 
     def binary(self) -> Union[None, bytes]:
         if isinstance(self.repr, bytes):
-            return self.repr.inner
+            return self.repr
         return None
 
     def list(self) -> Union[None, list]:
