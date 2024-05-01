@@ -13,15 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import asyncio
 from asyncio import StreamReader, StreamWriter
-
-
-class ClientException(Exception):
-    """
-    An exception thrown by this client library
-    """
-    pass
+from .query import Query
+from .exception import ProtocolException
 
 
 class Connection:
@@ -32,6 +26,8 @@ class Connection:
     def __init__(self, reader: StreamReader, writer: StreamWriter) -> None:
         self._reader = reader
         self._writer = writer
+        self._cursor = 0
+        self.buffer = bytes()
 
     async def _write_all(self, bytes: bytes):
         self._write(bytes)
@@ -39,6 +35,9 @@ class Connection:
 
     def _write(self, bytes: bytes) -> None:
         self._writer.write(bytes)
+
+    def __buffer(self) -> bytes:
+        return self.buffer[:self._cursor]
 
     async def _flush(self):
         await self._writer.drain()
@@ -53,46 +52,59 @@ class Connection:
         self._writer.close()
         await self._writer.wait_closed()
 
+    def __parse_string(self) -> None | str:
+        strlen = self.__parse_int()
+        if strlen:
+            if len(self.__buffer()) >= strlen:
+                strlen = self.__buffer()[:strlen].decode()
+                self._cursor += strlen
+                return strlen
 
-class Config:
-    def __init__(self, username: str, password: str, host: str = "127.0.0.1", port: int = 2003) -> None:
-        self._username = username
-        self._password = password
-        self._host = host
-        self._port = port
+    def __parse_binary(self) -> None | bytes:
+        binlen = self.__parse_int()
+        if binlen:
+            if len(self.__buffer()) >= binlen:
+                binlen = self.__buffer()[:binlen].decode()
+                self._cursor += binlen
+                return binlen
 
-    def get_username(self) -> str:
-        return self._username
+    def __parse_int(self) -> None | int:
+        i = 0
+        strlen = 0
+        stop = False
+        buffer = self.__buffer()
 
-    def get_password(self) -> str:
-        return self._password
+        while i < len(buffer) and not stop:
+            digit = None
+            if 48 <= buffer[i] <= 57:
+                digit = buffer[i] - 48
 
-    def get_host(self) -> str:
-        return self._host
+            if digit is not None:
+                strlen = (10 * strlen) + digit
+                i += 1
+            else:
+                raise ProtocolException("invalid response from server")
 
-    def get_port(self) -> int:
-        return self._port
+            if i < len(buffer) and buffer[i] == ord(b'\n'):
+                stop = True
+                i += 1
 
-    def __hs(self) -> bytes:
-        return f"H\0\0\0\0\0{len(self.get_username())}\n{len(self.get_password())}\n{self.get_username()}{self.get_password()}".encode()
+        if stop:
+            self._cursor += i
+            self._cursor += 1  # for LF
+            return strlen
 
-    async def connect(self) -> Connection:
-        """
-        Establish a connection to the database instance using the set configuration.
-
-        ## Exceptions
-        Exceptions are raised in the following scenarios:
-        - If the server responds with a handshake error
-        - If the server sends an unknown handshake (usually caused by version incompatibility)
-        """
-        reader, writer = await asyncio.open_connection(self.get_host(), self.get_port())
-        con = Connection(reader, writer)
-        await con._write_all(self.__hs())
-        resp = await con._read_exact(4)
-        a, b, c, d = resp[0], resp[1], resp[2], resp[3]
-        if resp == b"H\0\0\0":
-            return con
-        elif a == ord(b'H') and b == 0 and c == 1:
-            raise ClientException(f"handshake error {d}")
-        else:
-            raise ClientException("unknown handshake")
+    async def run_simple_query(self, query: Query):
+        query_window_str = str(len(query._q_window))
+        total_packet_size = len(query_window_str) + 1 + len(query._buffer)
+        # write metaframe
+        metaframe = f"S{str(total_packet_size)}\n{query_window_str}\n"
+        await self._write_all(metaframe.encode())
+        # write dataframe
+        await self._write_all(query._buffer)
+        # now enter read loop
+        while True:
+            read = await self._reader.read(1024)
+            if len(read) == 0:
+                raise ConnectionResetError
+            self.buffer = self.buffer + read

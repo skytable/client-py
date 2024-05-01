@@ -13,6 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .connection import Connection
-from .query import Query, UInt, SInt
-from .config import Config
+
+class ClientException(Exception):
+    """
+    An exception thrown by this client library
+    """
+    pass
+
+
+class ProtocolException(ClientException):
+    """
+    An exception thrown by the protocol
+    """
+    pass

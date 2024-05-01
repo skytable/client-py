@@ -13,6 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .connection import Connection
-from .query import Query, UInt, SInt
-from .config import Config
+import unittest
+from src.skytable_py.query import Query, UInt
+
+
+class QueryTest(unittest.TestCase):
+    def test_param_cnt(self):
+        self.assertEqual(Query("sysctl report status").get_param_count(), 0)
+
+    def test_encode_few_params(self):
+        blob = Query(
+            "insert into db.db { name: ?, random_num: ? }", "sayan", UInt(300))._buffer
+        self.assertEqual(
+            blob, b"insert into db.db { name: ?, random_num: ? }\x065\nsayan\x02300\n")
