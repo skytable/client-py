@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "skytable-py"
-version = "0.0.1"
+version = "0.0.2"
 authors = [{ name = "Sayan Nandan", email = "nandansayan@outlook.com" }]
 description = "Official Skytable client library for Python"
 readme = "README.md"

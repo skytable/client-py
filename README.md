@@ -1,9 +1,19 @@
 # Skytable Python Client
 
+> **Note**: This library is currently in alpha
+
 This is an alpha version of Skytable's official connector for Python 3.X.
+
 
 ## Example
 
+Install the dependency:
+
+```sh
+pip install skytable-py
+```
+
+Use in your code:
 ```python
 import asyncio
 from skytable_py import Config
