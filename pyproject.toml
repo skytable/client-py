@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "skytable-py"
+version = "0.0.1"
+authors = [{ name = "Sayan Nandan", email = "nandansayan@outlook.com" }]
+description = "Official Skytable client library for Python"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Topic :: Database",
+    "Topic :: Database :: Database Engines/Servers",
+    "Topic :: Database :: Front-Ends",
+]
+
+[project.urls]
+Homepage = "https://github.com/skytable/skytable-py"
+Issues = "https://github.com/skytable/skytable-py/issues"
