@@ -16,7 +16,7 @@
 from typing import Union
 from .exception import ProtocolException
 from .response import Value, UInt8, UInt16, UInt32, UInt64, SInt8, SInt16, SInt32, SInt64, Float32, Float64, Empty, \
-    ErrorCode, Row
+    ErrorCode, Row, Response
 
 
 class Protocol:
@@ -208,6 +208,11 @@ class Protocol:
                 self._cursor = cursor_start
                 return None
         return rows
+
+    def parse(self) -> Response:
+        e = self.parse_next_element()
+        if e:
+            return Response(e)
 
     def parse_next_element(self) -> Union[None, Value, Empty, ErrorCode]:
         if self.__is_eof():

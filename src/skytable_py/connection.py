@@ -16,6 +16,7 @@
 from asyncio import StreamReader, StreamWriter
 from .query import Query
 from .protocol import Protocol
+from .response import Response
 
 
 class Connection:
@@ -51,7 +52,7 @@ class Connection:
         self._writer.close()
         await self._writer.wait_closed()
 
-    async def run_simple_query(self, query: Query):
+    async def run_simple_query(self, query: Query) -> Response:
         query_window_str = str(query._q_window)
         total_packet_size = len(query_window_str) + 1 + len(query._buffer)
         # write metaframe
@@ -59,3 +60,10 @@ class Connection:
         await self._write_all(metaframe.encode())
         # write dataframe
         await self._write_all(query._buffer)
+        # read response
+        while True:
+            new_block = await self._reader.read(1024)
+            self._protocol.push_additional_bytes(new_block)
+            resp = self._protocol.parse()
+            if resp:
+                return resp
