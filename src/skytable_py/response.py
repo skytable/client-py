@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from dataclasses import dataclass
-from typing import Union
+from typing import Union, List
 from .exception import ClientException
 
 
@@ -136,7 +136,7 @@ class Value:
 
 
 class Row:
-    def __init__(self, values: list[Value]) -> None:
+    def __init__(self, values: List[Value]) -> None:
         self.columns = values
 
     def __eq__(self, other):
@@ -151,7 +151,7 @@ class ErrorCode:
 
 
 class Response:
-    def __init__(self, resp: Union[Empty, Value, Row, list[Row], ErrorCode]):
+    def __init__(self, resp: Union[Empty, Value, Row, List[Row], ErrorCode]):
         self.data = resp
 
     def is_empty(self) -> bool:
@@ -165,7 +165,7 @@ class Response:
         if isinstance(self.data, Row):
             return self.data
 
-    def rows(self) -> Union[None, list[Row]]:
+    def rows(self) -> Union[None, List[Row]]:
         if isinstance(self.data, list):
             return self.data
 

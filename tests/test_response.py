@@ -59,6 +59,10 @@ class ProtocolTest(unittest.TestCase):
                                    ).value().repr.inner, 3.141592654)
         self.assertEquals(Response(Value(Float64(3.141592654))
                                    ).value().repr.inner, 3.141592654)
+        self.assertEquals(Response(Value(Float32(-3.141592654))
+                                   ).value().repr.inner, -3.141592654)
+        self.assertEquals(Response(Value(Float64(-3.141592654))
+                                   ).value().repr.inner, -3.141592654)
         # simple collections
         self.assertEquals(Response(Value(b"bytes")).value().repr, b"bytes")
         self.assertEquals(Response(Value("string")).value().repr, "string")

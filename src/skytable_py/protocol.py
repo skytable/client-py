@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Union
+from typing import Union, List
 from .exception import ProtocolException
 from .response import Value, UInt8, UInt16, UInt32, UInt64, SInt8, SInt16, SInt32, SInt64, Float32, Float64, Empty, \
     ErrorCode, Row, Response
@@ -145,16 +145,28 @@ class Protocol:
                 self.__decrement()  # move back to starting position of this integer
 
     def parse_float(self, type_symbol: int) -> Union[None, Value]:
+        if self.__is_eof():
+            self.__decrement()  # move back to type symbol
+            return None
+        is_negative = False
+        if self.__step() == ord('-'):
+            is_negative = True
+        else:
+            self.__decrement()  # move back to float starting position since there is no '-'
         whole = self.parse_next_int(stop_symbol='.')
         if whole:
             decimal = self.parse_next_int()
             if decimal:
                 full_float = float(f"{whole}.{decimal}")
+                if is_negative:
+                    full_float = -full_float
                 if type_symbol == 10:
                     return Value(Float32(full_float))
                 else:
                     return Value(Float64(full_float))
         self.__decrement()  # type symbol
+        if is_negative:
+            self.__decrement()
 
     def parse_error_code(self) -> Union[None, ErrorCode]:
         if self.__remaining() < 2:
@@ -196,7 +208,7 @@ class Protocol:
                 return None
         return Row(columns)
 
-    def parse_rows(self) -> Union[None, list[Row]]:
+    def parse_rows(self) -> Union[None, List[Row]]:
         cursor_start = self._cursor - 1
         row_count = self.parse_next_int()
         rows = []
