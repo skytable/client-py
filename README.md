@@ -1,11 +1,10 @@
 # Skytable Python Client
 
-> **Note**: This library is currently in alpha
+![PyPI - Version](https://img.shields.io/pypi/v/skytable-py) ![Static Badge](https://img.shields.io/badge/python-%3E%3D3.9-blue) ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/skytable/client-py/test.yml) ![GitHub License](https://img.shields.io/github/license/skytable/client-py)
 
-This is an alpha version of Skytable's official connector for Python 3.X.
+This is the official Python client driver for [Skytable](https://github.com/skytable/skytable). The driver has been tested to work with [Skytable 0.8.2](https://github.com/skytable/skytable/releases/tag/v0.8.2) using the [Skyhash/2 Protocol](https://docs.skytable.io/protocol/). The Python client driver provides first-class `async` support using `asyncio` and does not have any additional dependencies at the moment.
 
-
-## Example
+## Example usage
 
 Install the dependency:
 
