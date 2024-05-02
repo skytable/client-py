@@ -14,6 +14,7 @@
 # limitations under the License.
 
 from abc import ABC
+from typing import Tuple
 # internal
 from .exception import ClientException
 
@@ -36,7 +37,7 @@ class Query:
 
 
 class SkyhashParameter(ABC):
-    def encode_self(self) -> tuple[bytes, int]: pass
+    def encode_self(self) -> Tuple[bytes, int]: pass
 
 
 class UInt(SkyhashParameter):
@@ -45,7 +46,7 @@ class UInt(SkyhashParameter):
             raise ClientException("unsigned int can't be negative")
         self.v = v
 
-    def encode_self(self) -> tuple[bytes, int]:
+    def encode_self(self) -> Tuple[bytes, int]:
         return (f"\x02{self.v}\n".encode(), 1)
 
 
@@ -53,11 +54,11 @@ class SInt(SkyhashParameter):
     def __init__(self, v: int) -> None:
         self.v = v
 
-    def encode_self(self) -> tuple[bytes, int]:
+    def encode_self(self) -> Tuple[bytes, int]:
         return (f"\x03{self.v}\n".encode(), 1)
 
 
-def encode_parameter(parameter: any) -> tuple[bytes, int]:
+def encode_parameter(parameter: any) -> Tuple[bytes, int]:
     encoded = None
     if isinstance(parameter, SkyhashParameter):
         return parameter.encode_self()
