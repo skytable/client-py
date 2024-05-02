@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import unittest
+import sys
 
 
 class MyTestLoader(unittest.TestLoader):
@@ -30,6 +31,8 @@ class MyTestRunner(unittest.TextTestRunner):
     def run(self, test):
         self.verbosity = 2
         result = super().run(test)
+        if not result.wasSuccessful():
+            sys.exit(1)
         return result
 
 
